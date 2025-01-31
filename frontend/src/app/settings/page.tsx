@@ -108,7 +108,7 @@ export default function Settings() {
                                         <Label htmlFor="yahoo_client_id">Client ID</Label>
                                         <Input
                                             id="yahoo_client_id"
-                                            type="text"
+                                            type="password"
                                             value={settings?.yahoo_client_id || ''}
                                             onChange={(e) => setSettings(prev => prev ? { ...prev, yahoo_client_id: e.target.value } : null)}
                                             className={errors.yahoo_client_id ? 'border-red-500' : ''}
@@ -149,7 +149,7 @@ export default function Settings() {
                                         <Label htmlFor="ebay_client_id">Client ID</Label>
                                         <Input
                                             id="ebay_client_id"
-                                            type="text"
+                                            type="password"
                                             value={settings?.ebay_client_id || ''}
                                             onChange={(e) => setSettings(prev => prev ? { ...prev, ebay_client_id: e.target.value } : null)}
                                             className={errors.ebay_client_id ? 'border-red-500' : ''}
