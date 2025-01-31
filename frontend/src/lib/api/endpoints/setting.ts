@@ -1,13 +1,19 @@
-import { apiClient } from '../client';
 import type { ApiResponse } from '@/lib/types/api';
-import type { SettingData, SettingUpdateParams } from '@/lib/types/setting';
+import type { Setting, SettingResponse } from '@/lib/types/setting';
+import { apiClient } from '@/lib/api/client';
 
-export const getSetting = async (): Promise<ApiResponse<SettingData>> => {
-    const response = await apiClient.get('setting/');
-    return response.data;
-};
+export const settingEndpoints = {
+    get: 'setting/',
+    update: 'setting/',
+} as const;
 
-export const updateSetting = async (params: SettingUpdateParams): Promise<ApiResponse<SettingData>> => {
-    const response = await apiClient.put('setting/', params);
-    return response.data;
+export const settingApi = {
+    get: async (): Promise<SettingResponse> => {
+        const { data } = await apiClient.get(settingEndpoints.get);
+        return data;
+    },
+    update: async (params: Setting): Promise<SettingResponse> => {
+        const { data } = await apiClient.put(settingEndpoints.update, params);
+        return data;
+    },
 }; 

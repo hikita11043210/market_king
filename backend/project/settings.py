@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -165,3 +165,14 @@ REST_FRAMEWORK = {
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
+
+# eBay Settings
+EBAY_IS_SANDBOX = os.getenv('EBAY_IS_SANDBOX', 'True').lower() == 'true'
+EBAY_SANDBOX_URL = os.getenv('EBAY_SANDBOX_URL', 'https://api.sandbox.ebay.com')
+EBAY_PRODUCTION_URL = os.getenv('EBAY_PRODUCTION_URL', 'https://api.ebay.com')
+EBAY_API_COMPATIBILITY_LEVEL = os.getenv('EBAY_API_COMPATIBILITY_LEVEL', '967')
+EBAY_API_SITE_ID = os.getenv('EBAY_API_SITE_ID', '0')
+EBAY_TOKEN_CACHE_KEY = os.getenv('EBAY_TOKEN_CACHE_KEY', 'ebay_auth_token')
+EBAY_TOKEN_CACHE_BUFFER = int(os.getenv('EBAY_TOKEN_CACHE_BUFFER', '300')) 
+
+EXCHANGE_RATE_API_KEY = os.getenv('EXCHANGE_RATE_API_KEY')

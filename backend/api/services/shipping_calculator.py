@@ -113,7 +113,6 @@ class ShippingCalculator:
 
                 basic_price = shipping_rate.basic_price
             except Exception as e:
-                print(e)
                 return {
                     'success': False,
                     'error': f'送料の取得に失敗しました: {str(e)}'

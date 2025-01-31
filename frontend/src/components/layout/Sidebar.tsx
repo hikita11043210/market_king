@@ -121,8 +121,14 @@ export function Sidebar() {
     useEffect(() => {
         const loadUserData = () => {
             const authToken = Cookies.get('auth');
-            if (authToken) {
-                setUserData({ user: {}, token: authToken });
+            const userDataStr = Cookies.get('user');
+
+            if (authToken && userDataStr) {
+                const userData = JSON.parse(userDataStr);
+                setUserData({
+                    user: userData,
+                    token: authToken
+                });
             }
         };
 
@@ -131,10 +137,11 @@ export function Sidebar() {
 
     const handleLogout = () => {
         Cookies.remove('auth');
+        Cookies.remove('user');
         setUserData({ user: {} });
         router.push('/login');
     };
-
+    console.log(userData)
     return (
         <div className="flex h-full w-64 flex-col bg-[#1e2a3b]">
             <div className="flex flex-col px-6 py-6">

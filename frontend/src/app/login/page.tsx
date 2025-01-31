@@ -2,11 +2,10 @@
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GoogleLogin } from '@react-oauth/google';
-import axios from "axios";
 import { jwtDecode } from 'jwt-decode'
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { API_ENDPOINT } from '@/lib/constants/api';
+import { apiClient } from '@/lib/api/client';
 
 const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
@@ -25,10 +24,21 @@ export default function LoginPage() {
                 "picture": decoded.picture
             };
 
-            const res = await axios.post(`${API_ENDPOINT}/users/`, body);
+            const res = await apiClient.post('/users/', body);
 
-            // トークンを保存
+            // トークンとユーザー情報を保存
             Cookies.set('auth', res.data.token, {
+                expires: 7,
+                path: '/',
+                sameSite: 'Lax'
+            });
+
+            // ユーザー情報を保存
+            Cookies.set('user', JSON.stringify({
+                picture: decoded.picture,
+                username: decoded.name,
+                email: decoded.email
+            }), {
                 expires: 7,
                 path: '/',
                 sameSite: 'Lax'
@@ -38,9 +48,7 @@ export default function LoginPage() {
 
             if (savedToken) {
                 // トークンが正しく保存されたことを確認してからリダイレクト
-                setTimeout(() => {
-                    window.location.href = '/dashboard';
-                }, 10000);
+                router.push('/dashboard');
             } else {
                 console.error('Failed to save token');
             }

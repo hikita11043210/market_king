@@ -1,203 +1,179 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { z } from 'zod';
-import { getSetting, updateSetting } from '@/lib/api/endpoints/setting';
-import type { SettingData } from '@/lib/types/setting';
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
-import { showToast } from "@/lib/toast";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { settingApi } from "@/lib/api/endpoints/setting";
+import type { Setting } from "@/lib/types/setting";
 
-export default function Settings() {
-    const [settings, setSettings] = useState<SettingData | null>(null);
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
+const settingSchema = z.object({
+    ebay_client_id: z.string().min(1, "eBay Client IDは必須です"),
+    ebay_client_secret: z.string().min(1, "eBay Client Secretは必須です"),
+    ebay_dev_id: z.string().min(1, "eBay Dev IDは必須です"),
+    yahoo_client_id: z.string().min(1, "Yahoo Client IDは必須です"),
+    yahoo_client_secret: z.string().min(1, "Yahoo Client Secretは必須です"),
+});
+
+export default function SettingPage() {
+    const { toast } = useToast();
+    const [setting, setSetting] = useState<Setting>();
+
+    const form = useForm<z.infer<typeof settingSchema>>({
+        resolver: zodResolver(settingSchema),
+        defaultValues: {
+            ebay_client_id: "",
+            ebay_client_secret: "",
+            ebay_dev_id: "",
+            yahoo_client_id: "",
+            yahoo_client_secret: "",
+        },
+    });
 
     useEffect(() => {
-        fetchSettings();
-    }, []);
-
-    const fetchSettings = async () => {
-        try {
-            const response = await getSetting();
-            if (response.success && response.data) {
-                setSettings(response.data);
-            } else {
-                showToast.error({
-                    description: response.message || '設定の取得に失敗しました'
+        const fetchSetting = async () => {
+            try {
+                const response = await settingApi.get();
+                if (response.success && response.data) {
+                    setSetting(response.data);
+                    // フォームの値を更新
+                    form.reset(response.data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch settings:", error);
+                toast({
+                    title: "エラー",
+                    description: "設定の取得に失敗しました",
+                    variant: "destructive",
                 });
             }
-        } catch (err) {
-            showToast.error({
-                description: '設定の取得に失敗しました'
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+        };
 
-    const handleRegister = async () => {
-        if (!settings) return;
+        fetchSetting();
+    }, [form, toast]);
 
-        setIsSaving(true);
-
+    const onSubmit = async (values: z.infer<typeof settingSchema>) => {
         try {
-            const updateParams = {
-                yahoo_client_id: settings.yahoo_client_id || undefined,
-                yahoo_client_secret: settings.yahoo_client_secret || undefined,
-                ebay_client_id: settings.ebay_client_id || undefined,
-                ebay_client_secret: settings.ebay_client_secret || undefined,
-            };
-            const response = await updateSetting(updateParams);
-            if (!response.success) {
-                throw new Error(response.message || '登録に失敗しました');
+            const response = await settingApi.update(values);
+            if (response.success) {
+                toast({
+                    title: "設定を更新しました",
+                    description: "変更が保存されました",
+                    variant: "default",
+                });
+            } else {
+                throw new Error(response.message || "設定の更新に失敗しました");
             }
-
-            showToast.success({
-                description: "登録が完了しました"
-            });
         } catch (error) {
-            if (error instanceof z.ZodError) {
-                const errorMessages: { [key: string]: string } = {};
-                error.errors.forEach((err) => {
-                    if (err.path[0]) {
-                        errorMessages[err.path[0]] = err.message;
-                    }
-                });
-                setErrors(errorMessages);
-                showToast.warning({
-                    description: "入力内容を確認してください"
-                });
-            } else {
-                showToast.error({
-                    description: error instanceof Error ? error.message : '登録に失敗しました'
-                });
-            }
-            console.error('Registration Error:', error);
-        } finally {
-            setIsSaving(false);
+            console.error("Failed to update settings:", error);
+            toast({
+                title: "エラー",
+                description: error instanceof Error ? error.message : "設定の更新に失敗しました",
+                variant: "destructive",
+            });
         }
     };
-
-    if (isLoading) {
-        return <div className="text-center py-4">読み込み中...</div>;
-    }
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
+        <div className="container mx-auto py-10">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold tracking-tight">各種設定</h1>
-                <p className="text-muted-foreground mt-2">各種設定値を管理します。</p>
+                <h2 className="text-2xl font-bold">各種設定</h2>
+                <p className="text-muted-foreground">APIの認証情報などを設定します</p>
             </div>
-
-            <div className="space-y-6">
-                <Card>
-                    <CardHeader>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-8">
-                            {/* Yahoo API設定 */}
-                            <div>
-                                <h3 className="text-lg font-semibold mb-4">Yahoo API</h3>
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="yahoo_client_id">Client ID</Label>
-                                        <Input
-                                            id="yahoo_client_id"
-                                            type="password"
-                                            value={settings?.yahoo_client_id || ''}
-                                            onChange={(e) => setSettings(prev => prev ? { ...prev, yahoo_client_id: e.target.value } : null)}
-                                            className={errors.yahoo_client_id ? 'border-red-500' : ''}
-                                            disabled={isSaving}
-                                        />
-                                        {errors.yahoo_client_id && (
-                                            <p className="text-sm text-red-500 flex items-center gap-1">
-                                                <AlertCircle className="h-4 w-4" />
-                                                {errors.yahoo_client_id}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="yahoo_client_secret">Client Secret</Label>
-                                        <Input
-                                            id="yahoo_client_secret"
-                                            type="password"
-                                            value={settings?.yahoo_client_secret || ''}
-                                            onChange={(e) => setSettings(prev => prev ? { ...prev, yahoo_client_secret: e.target.value } : null)}
-                                            className={errors.yahoo_client_secret ? 'border-red-500' : ''}
-                                            disabled={isSaving}
-                                        />
-                                        {errors.yahoo_client_secret && (
-                                            <p className="text-sm text-red-500 flex items-center gap-1">
-                                                <AlertCircle className="h-4 w-4" />
-                                                {errors.yahoo_client_secret}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
+            <div className="max-w-2xl">
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <div className="space-y-4">
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-medium">eBay設定</h3>
+                                <FormField
+                                    control={form.control}
+                                    name="ebay_client_id"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Client ID</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} type="text" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="ebay_client_secret"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Client Secret</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} type="password" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="ebay_dev_id"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Dev ID</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} type="text" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             </div>
 
-                            {/* eBay API設定 */}
-                            <div>
-                                <h3 className="text-lg font-semibold mb-4">eBay API</h3>
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="ebay_client_id">Client ID</Label>
-                                        <Input
-                                            id="ebay_client_id"
-                                            type="password"
-                                            value={settings?.ebay_client_id || ''}
-                                            onChange={(e) => setSettings(prev => prev ? { ...prev, ebay_client_id: e.target.value } : null)}
-                                            className={errors.ebay_client_id ? 'border-red-500' : ''}
-                                            disabled={isSaving}
-                                        />
-                                        {errors.ebay_client_id && (
-                                            <p className="text-sm text-red-500 flex items-center gap-1">
-                                                <AlertCircle className="h-4 w-4" />
-                                                {errors.ebay_client_id}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="ebay_client_secret">Client Secret</Label>
-                                        <Input
-                                            id="ebay_client_secret"
-                                            type="password"
-                                            value={settings?.ebay_client_secret || ''}
-                                            onChange={(e) => setSettings(prev => prev ? { ...prev, ebay_client_secret: e.target.value } : null)}
-                                            className={errors.ebay_client_secret ? 'border-red-500' : ''}
-                                            disabled={isSaving}
-                                        />
-                                        {errors.ebay_client_secret && (
-                                            <p className="text-sm text-red-500 flex items-center gap-1">
-                                                <AlertCircle className="h-4 w-4" />
-                                                {errors.ebay_client_secret}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 登録ボタン */}
-                            <div className="pt-4">
-                                <Button
-                                    onClick={handleRegister}
-                                    disabled={isSaving || !settings?.yahoo_client_id || !settings?.yahoo_client_secret || !settings?.ebay_client_id || !settings?.ebay_client_secret}
-                                    className="w-full"
-                                >
-                                    {isSaving ? '登録中...' : '登録'}
-                                </Button>
-                                <p className="text-sm text-gray-500 mt-2 text-center">
-                                    ※ 全ての認証情報を入力してから登録してください
-                                </p>
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-medium">Yahoo!オークション設定</h3>
+                                <FormField
+                                    control={form.control}
+                                    name="yahoo_client_id"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Client ID</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} type="text" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="yahoo_client_secret"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Client Secret</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} type="password" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
+
+                        <div className="flex justify-end">
+                            <Button type="submit">保存</Button>
+                        </div>
+                    </form>
+                </Form>
             </div>
         </div>
     );

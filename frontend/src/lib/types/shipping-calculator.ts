@@ -21,10 +21,10 @@ export interface ShippingCalculatorParams {
 export interface ShippingResult {
     success: boolean;
     base_rate: number;
-    surcharges: { [key: string]: number };
+    surcharges: Record<string, number>;
     total_amount: number;
     weight_used: number;
-    zone: string;
+    zone: number;
     is_oversized: boolean;
 }
 
@@ -43,4 +43,13 @@ export type ShippingService = {
 
 export type ShippingCalculatorResult = {
     available_services: ShippingService[];
-}; 
+};
+
+export interface ShippingServiceOption {
+    shippingService: string;
+    shippingServiceCost: {
+        value: string;
+        currencyId: string;
+    };
+    freeShipping?: boolean;
+} 

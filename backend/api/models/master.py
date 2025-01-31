@@ -59,7 +59,9 @@ class Setting(models.Model):
     yahoo_client_id = models.CharField(max_length=255, null=True, blank=True)
     yahoo_client_secret = models.CharField(max_length=255, null=True, blank=True)
     ebay_client_id = models.CharField(max_length=255, null=True, blank=True)
+    ebay_dev_id = models.CharField(max_length=255, null=True, blank=True)
     ebay_client_secret = models.CharField(max_length=255, null=True, blank=True)
+    ebay_auth_token = models.TextField(null=True, blank=True)  # Auth'n'Authトークン用のフィールド
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

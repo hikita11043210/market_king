@@ -32,7 +32,7 @@ interface SearchResponse {
 }
 
 export default function SearchPage() {
-    const [p, setP] = useState('');
+    const [p, setP] = useState('カメラ');
     const [min, setMin] = useState('');
     const [max, setMax] = useState('');
     const [loading, setLoading] = useState(false);
@@ -45,7 +45,7 @@ export default function SearchPage() {
     const [fixed, setFixed] = useState('3');
     const [new_item, setNewItem] = useState(false);
     const [is_postage_mode, setIsPostageMode] = useState(false);
-    const [n, setN] = useState('100');
+    const [n, setN] = useState('20');
     const [platform] = useState('yahoo');
     const [selectedItem, setSelectedItem] = useState<SearchResult | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);

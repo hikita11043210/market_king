@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AddFixedPriceItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+<RequesterCredentials>
+<eBayAuthToken>{{ token }}</eBayAuthToken>
+</RequesterCredentials>
+<Item>
+<Title>Test Product Title</Title>
+<Description>This is a test product description</Description>
+<PrimaryCategory>
+<CategoryID>31388</CategoryID>
+</PrimaryCategory>
+<StartPrice currencyID="USD">100.00</StartPrice>
+<Quantity>1</Quantity>
+<ListingDuration>GTC</ListingDuration>
+<ListingType>FixedPriceItem</ListingType>
+<Location>Japan</Location>
+<Country>JP</Country>
+<Currency>USD</Currency>
+<ConditionID>1000</ConditionID>
+<ItemSpecifics>
+<NameValueList>
+<Name>Brand</Name>
+<Value>Canon</Value>
+</NameValueList>
+<NameValueList>
+<Name>Model</Name>
+<Value>PowerShot G7 X</Value>
+</NameValueList>
+<NameValueList>
+<Name>Type</Name>
+<Value>Point &amp; Shoot</Value>
+</NameValueList>
+</ItemSpecifics>
+<ReturnPolicy>
+<ReturnsAcceptedOption>ReturnsAccepted</ReturnsAcceptedOption>
+<ReturnsWithinOption>Days_30</ReturnsWithinOption>
+<RefundOption>MoneyBack</RefundOption>
+<ShippingCostPaidByOption>Buyer</ShippingCostPaidByOption>
+</ReturnPolicy>
+<ShippingDetails>
+<ShippingType>Flat</ShippingType>
+<ShippingServiceOptions>
+<ShippingServicePriority>1</ShippingServicePriority>
+<ShippingService>EconomyShippingFromOutsideUS</ShippingService>
+<ShippingServiceCost currencyID="USD">5.00</ShippingServiceCost>
+<FreeShipping>false</FreeShipping>
+</ShippingServiceOptions>
+</ShippingDetails>
+<ShippingPackageDetails>
+<WeightMajor>1</WeightMajor>
+<WeightMinor>0</WeightMinor>
+<PackageDepth>10</PackageDepth>
+<PackageLength>10</PackageLength>
+<PackageWidth>10</PackageWidth>
+</ShippingPackageDetails>
+<DispatchTimeMax>3</DispatchTimeMax>
+<Site>US</Site>
+</Item>
+</AddFixedPriceItemRequest> 
